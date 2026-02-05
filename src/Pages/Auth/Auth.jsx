@@ -21,17 +21,18 @@ const Auth = () => {
   const [{ user }, dispatch] = useContext(DataContext);
 
   const navigate = useNavigate();
-  const navStateData = useLocation();
-
+  //const navStateData = useLocation();
+  const { state } = useLocation();
   // console.log(navStateData);
   //console.log(user);
   console.log("navStateData", JSON.stringify(navStateData, null, 2));
 
+  // const redirectTo =
+  //   navStateData.state?.redirect && navStateData.state.redirect.startsWith("/")
+  //     ? navStateData.state.redirect
+  //     : "/";
   const redirectTo =
-    navStateData.state?.redirect && navStateData.state.redirect.startsWith("/")
-      ? navStateData.state.redirect
-      : "/";
-
+    state?.redirect && state.redirect.startsWith("/") ? state.redirect : "/";
   // console.log(password,email);
   const authHandler = async (e) => {
     e.preventDefault();

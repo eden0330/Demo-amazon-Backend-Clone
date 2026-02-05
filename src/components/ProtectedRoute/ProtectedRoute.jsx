@@ -10,11 +10,11 @@ const ProtectedRoute = ({ children, msg, redirect }) => {
   useEffect(() => {
     if (!user) {
       navigate("/auth", {
-        state: { msg, redirect: location.pathname },
         replace: true,
+        state: { msg, redirect: location.pathname },
       });
     }
-  }, [user, navigate, msg, location.pathname]);
+  }, [user, navigate, location.pathname, msg]);
 
   return user ? children : null;
 };
