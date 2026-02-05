@@ -13,11 +13,12 @@ import { doc, setDoc } from "firebase/firestore";
 import { Type } from "../../Utility/action.type";
 import { ClipLoader } from "react-spinners";
 
+
 // const navigate = useNavigate();
 
 
-const API_BASE = "http://localhost:3000";
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
 
 const Payment = () => {

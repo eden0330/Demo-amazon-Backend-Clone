@@ -13,9 +13,7 @@ import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 
-const stripePromise = loadStripe(
-  "pk_test_51SgCIpQk1BCVT1C0tKf6lzWlmfgfs1Pq1hTTodx2Vvnx0elSSkcghudYqQlt93BeD5iywxGl0apzsh5FBcuRJgMc00JCun948I"
-);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 
 const Routing = () => {
