@@ -11,7 +11,6 @@ import {
 import { DataContext } from "../../components/DataProvider/DataProvider";
 import { ClipLoader } from "react-spinners";
 
-
 const Auth = () => {
   const [email, setEmail] = useState("");
 
@@ -21,27 +20,25 @@ const Auth = () => {
   const [loading, setLoading] = useState({ signIn: false, signUp: false });
   const [{ user }, dispatch] = useContext(DataContext);
 
-
   const navigate = useNavigate();
   const navStateData = useLocation();
 
   // console.log(navStateData);
   //console.log(user);
-console.log("navStateData", JSON.stringify(navStateData, null, 2));
+  console.log("navStateData", JSON.stringify(navStateData, null, 2));
 
-const redirectTo =
-  navStateData.state?.redirect && navStateData.state.redirect.startsWith("/")
-    ? navStateData.state.redirect
-    : "/";
-
-
+  const redirectTo =
+    navStateData.state?.redirect && navStateData.state.redirect.startsWith("/")
+      ? navStateData.state.redirect
+      : "/";
 
   // console.log(password,email);
   const authHandler = async (e) => {
     e.preventDefault();
     console.log(e.target.name);
-    if (e.target.name == "signin") {
-      setLoading({ ...loading, signIn: true });
+    if (e.target.name === "signin") {
+      // setLoading({ ...loading, signIn: true });
+      setLoading((prev) => ({ ...prev, signIn: true }));
       //firebase auth
       signInWithEmailAndPassword(auth, email, password)
         .then((userInfo) => {
@@ -50,15 +47,18 @@ const redirectTo =
             type: Type.SET_USER,
             user: userInfo.user,
           });
-          setLoading({ ...loading, signIn: false });
+          // setLoading({ ...loading, signIn: false });
+          setLoading((prev) => ({ ...prev, signIn: false }));
           navigate(redirectTo, { replace: true });
         })
         .catch((err) => {
           setError(err.message);
-          setLoading({ ...loading, signIn: false });
+          // setLoading({ ...loading, signIn: false });
+          setLoading((prev) => ({ ...prev, signIn: false }));
         });
     } else {
-      setLoading({ ...loading, signUp: true });
+      // setLoading({ ...loading, signUp: true });
+      setLoading((prev) => ({ ...prev, signUp: true }));
       createUserWithEmailAndPassword(auth, email, password)
         .then((userInfo) => {
           // console.log(userInfo);
@@ -66,12 +66,14 @@ const redirectTo =
             type: Type.SET_USER,
             user: userInfo.user,
           });
-          setLoading({ ...loading, signUp: false });
+          // setLoading({ ...loading, signUp: false });
+          setLoading((prev) => ({ ...prev, signUp: false }));
           navigate(redirectTo, { replace: true });
         })
         .catch((err) => {
           setError(err.message);
-          setLoading({ ...loading, signUp: false });
+          // setLoading({ ...loading, signUp: false });
+          setLoading((prev) => ({ ...prev, signUp: false }));
         });
     }
   };
