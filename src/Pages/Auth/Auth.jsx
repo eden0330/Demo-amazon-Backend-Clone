@@ -7,9 +7,12 @@ import { auth } from "../../Utility/Firebase";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from "firebase/auth";
 import { DataContext } from "../../components/DataProvider/DataProvider";
 import { ClipLoader } from "react-spinners";
+
+
 
 const Auth = () => {
   const [email, setEmail] = useState("");
@@ -22,7 +25,7 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const navStateData = useLocation();
-  
+
   console.log("navStateData", JSON.stringify(navStateData, null, 2));
 
 
@@ -78,6 +81,25 @@ const Auth = () => {
     }
   };
 
+
+const handleResetPassword = async () => {
+  if (!email) {
+    setError("Please enter your email first, then click 'Forgot password?'.");
+    return;
+  }
+
+  try {
+    await sendPasswordResetEmail(auth, email, {
+      url: "https://demo-amclone-be.netlify.app/#/auth",
+      handleCodeInApp: false,
+    });
+    setError("✅ Password reset email sent. Check your inbox/spam.");
+  } catch (err) {
+    setError(err.message);
+  }
+};
+
+
   return (
     <>
       {/* <Layout> */}
@@ -111,6 +133,18 @@ const Auth = () => {
                 id="password"
               />
             </div>
+            <p
+              onClick={handleResetPassword}
+              style={{
+                color: "#0066c0",
+                cursor: "pointer",
+                fontSize: "14px",
+                marginTop: "8px",
+                marginBottom: "10px",
+              }}
+            >
+              Forgot your password?
+            </p>
 
             <button
               type="submit"
