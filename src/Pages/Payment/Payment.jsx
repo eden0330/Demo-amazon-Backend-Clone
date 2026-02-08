@@ -1,4 +1,4 @@
-import React, { useContext,useState, useEffect } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../../components/Layout/Layout";
 import styles from "./Payment.module.css";
@@ -7,51 +7,45 @@ import ProductCard from "../../components/Product/ProductCard";
 
 import { CardElement, useStripe, useElements } from "@stripe/react-stripe-js";
 import CurrencyFormat from "../../components/Format/CurrencyFormat";
-import axios from "axios"
+import axios from "axios";
 import { db } from "../../Utility/Firebase";
 import { doc, setDoc } from "firebase/firestore";
 import { Type } from "../../Utility/action.type";
 import { ClipLoader } from "react-spinners";
 
-
 // const navigate = useNavigate();
-
-
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
-
 const Payment = () => {
-  const [{ basket, user },dispatch] = useContext(DataContext);
+  const [{ basket, user }, dispatch] = useContext(DataContext);
   const navigate = useNavigate();
 
   console.log(user);
 
- const stripe = useStripe();
- const elements = useElements();
- const [error, setError] = useState("");
- const [disabled, setDisabled] = useState(true);
-const [cardError, setCardError] = useState("");
+  const stripe = useStripe();
+  const elements = useElements();
+  const [error, setError] = useState("");
+  const [disabled, setDisabled] = useState(true);
+  const [cardError, setCardError] = useState("");
 
-const [clientSecret, setClientSecret] = useState("");
+  const [clientSecret, setClientSecret] = useState("");
   const [processing, setProcessing] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
-
 
   const totalItem = basket?.reduce((amount, item) => {
     return (item.amount ?? 1) + amount;
   }, 0);
 
-//  const total = basket?.reduce((amount, item) => {
-//    return item.price * item.amount + amount;
-//  }, 0);
+  //  const total = basket?.reduce((amount, item) => {
+  //    return item.price * item.amount + amount;
+  //  }, 0);
 
- const total = basket?.reduce((amount, item) => {
-   return amount + item.price * (item.amount ?? 1);
- }, 0);
+  const total = basket?.reduce((amount, item) => {
+    return amount + item.price * (item.amount ?? 1);
+  }, 0);
 
-
-//get client secret
+  //get client secret
 
   const totalCents = Math.round(total * 100);
 
@@ -65,97 +59,117 @@ const [clientSecret, setClientSecret] = useState("");
         return;
       }
 
+      // const res = await axios.post(
+      //   `${API_BASE}/payment/create?total=${totalCents}`
+      // );
+
       const res = await axios.post(
-        `${API_BASE}/payment/create?total=${totalCents}`
+        `${import.meta.env.VITE_API_BASE_URL}/payment/create?total=${total}`,
       );
+
       setClientSecret(res.data.clientSecret);
     };
 
     getClientSecret().catch((e) => {
       setClientSecret("");
       setCardError(
-        e?.response?.data?.message || e.message || "Failed to start payment"
+        e?.response?.data?.message || e.message || "Failed to start payment",
       );
     });
   }, [totalCents]);
 
+  axios.post(
+    `${import.meta.env.VITE_API_BASE_URL}/payment/create?total=${total}`,
+  );
 
-
-
-  const handleChange =  (e) => {
+  const handleChange = (e) => {
     console.log(e);
     // e.error?.message? setCardError(e?.error?.message):setCardError("")
-     setDisabled(e.empty);
-     setCardError(e.error ? e.error.message : "");
+    setDisabled(e.empty);
+    setCardError(e.error ? e.error.message : "");
   };
 
-const handlePayment = async (e) => {
-  e.preventDefault();
+  const handlePayment = async (e) => {
+    e.preventDefault();
 
+    //1 function contact to get the client secret
 
-  //1 function contact to get the client secret
-
-  if (!stripe || !elements) return;
-  if (!clientSecret) {
-    setCardError("Missing client secret");
-    return;
-  }
-
-  setProcessing(true);
-  setCardError("");
-
-  const card = elements.getElement(CardElement);
-  if (!card) {
-    setCardError("Card element not ready");
-    setProcessing(false);
-    return;
-  }
-
-  //2 client side or react side confirmation by usimg stripe
-
-  const result = await stripe.confirmCardPayment(clientSecret, {
-    payment_method: {
-      card: elements.getElement(CardElement),
-      billing_details: {
-        email: user?.email || "guest@example.com",
-      },
-    },
-  });
-
-  if (result.error) {
-    setCardError(result.error.message);
-    setProcessing(false);
-    return;
-  }
-
-  //3 after the confirmation order the firestore database save then clear basket
-
-dispatch({ type: Type.EMPTY_BASKET });
-
-  const paymentIntent = result.paymentIntent;
-  
-
-  if (paymentIntent && paymentIntent.status === "succeeded") {
-    setSucceeded(true);
-navigate("/orders", {state:{msg:"You have placed new order"}});
-    if (user?.uid) {
-      const orderRef = doc(db, "users", user.uid, "orders", paymentIntent.id);
-
-      await setDoc(orderRef, {
-        basket,
-        amount: paymentIntent.amount,
-        created: paymentIntent.created,
-        currency: paymentIntent.currency,
-        status: paymentIntent.status,
-      });
+    if (!stripe || !elements) return;
+    if (!clientSecret) {
+      setCardError("Missing client secret");
+      return;
     }
 
+    setProcessing(true);
+    setCardError("");
+
+    const card = elements.getElement(CardElement);
+    if (!card) {
+      setCardError("Card element not ready");
+      setProcessing(false);
+      return;
+    }
+
+    //2 client side or react side confirmation by usimg stripe
+
+    const result = await stripe.confirmCardPayment(clientSecret, {
+      payment_method: {
+        card: elements.getElement(CardElement),
+        billing_details: {
+          email: user?.email || "guest@example.com",
+        },
+      },
+    });
+
+    if (result.error) {
+      setCardError(result.error.message);
+      setProcessing(false);
+      return;
+    }
+
+    //3 after the confirmation order the firestore database save then clear basket
+
     dispatch({ type: Type.EMPTY_BASKET });
-  }
 
-  setProcessing(false);
-};
+    const paymentIntent = result.paymentIntent;
 
+    if (paymentIntent?.status === "succeeded") {
+      if (user?.uid) {
+        const orderRef = doc(db, "users", user.uid, "orders", paymentIntent.id);
+
+        await setDoc(orderRef, {
+          basket,
+          amount: paymentIntent.amount,
+          created: paymentIntent.created,
+          currency: paymentIntent.currency,
+          status: paymentIntent.status,
+        });
+      }
+
+      dispatch({ type: Type.EMPTY_BASKET });
+      navigate("/orders", { state: { msg: "You have placed new order" } });
+      setSucceeded(true);
+    }
+    //   if (paymentIntent && paymentIntent.status === "succeeded") {
+    //     setSucceeded(true);
+    // navigate("/orders", {state:{msg:"You have placed new order"}});
+    //     if (user?.uid) {
+    //       const orderRef = doc(db, "users", user.uid, "orders", paymentIntent.id);
+
+    //       await setDoc(orderRef, {
+    //         basket,
+    //         amount: paymentIntent.amount,
+    //         created: paymentIntent.created,
+    //         currency: paymentIntent.currency,
+    //         status: paymentIntent.status,
+    //       });
+    //     }
+
+    //     dispatch({ type: Type.EMPTY_BASKET });
+    //   }
+
+    setProcessing(false);
+  };
 
   return (
     <Layout>
@@ -220,14 +234,14 @@ navigate("/orders", {state:{msg:"You have placed new order"}});
                     {processing ? "Processing" : "Pay Now"}
                   </button> */}
                   <button type="submit">
-                    {
-                      processing? (
-                        <div className={styles.loadings}>
-                          <ClipLoader color="grey" size={12} />
-                          <p>please wait ....</p>
-                        </div>
-                      ):"Pay Now"
-                    }
+                    {processing ? (
+                      <div className={styles.loadings}>
+                        <ClipLoader color="grey" size={12} />
+                        <p>please wait ....</p>
+                      </div>
+                    ) : (
+                      "Pay Now"
+                    )}
                   </button>
                 </div>
               </form>

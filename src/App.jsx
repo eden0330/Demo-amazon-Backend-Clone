@@ -13,17 +13,19 @@ function App() {
   useEffect(() => {
     // const unsub = onAuthStateChanged(auth, (authUser) => {
     //       console.log(authUser);
-
-    auth.onAuthStateChanged((authUser) => {
-      if (authUser) {
-        // console.log(authUser);
-        dispatch({ type: Type.SET_USER, user: authUser });
-      } else {
-        dispatch({ type: Type.SET_USER, user: null });
-      }
-    });
-    // return () => unsub();
-  }, []);
+ const unsub = onAuthStateChanged(auth, (authUser) => {
+   dispatch({ type: Type.SET_USER, user: authUser || null });
+ });
+    // auth.onAuthStateChanged((authUser) => {
+    //   if (authUser) {
+    //     // console.log(authUser);
+    //     dispatch({ type: Type.SET_USER, user: authUser });
+    //   } else {
+    //     dispatch({ type: Type.SET_USER, user: null });
+    //   }
+    // });
+    return () => unsub();
+  }, [dispatch]);
   return (
     <>
       <Routing />

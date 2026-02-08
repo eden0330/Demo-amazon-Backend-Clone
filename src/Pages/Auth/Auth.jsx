@@ -22,8 +22,7 @@ const Auth = () => {
 
   const navigate = useNavigate();
   const navStateData = useLocation();
-  // console.log(navStateData);
-  //console.log(user);
+  
   console.log("navStateData", JSON.stringify(navStateData, null, 2));
 
 
